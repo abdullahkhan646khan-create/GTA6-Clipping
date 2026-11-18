@@ -10,5 +10,5 @@ where exists (select 1 from cron.job where jobname = 'clipforge-keepalive');
 select cron.schedule(
   'clipforge-keepalive',
   '*/10 * * * *',
-  $$ select net.http_get(url := 'https://REPLACE-WITH-YOUR-ENGINE.onrender.com/health', timeout_milliseconds := 30000) $$
+  $$ select net.http_get(url := 'https://clipforge-engine-4csq.onrender.com/health', timeout_milliseconds := 30000) $$
 );
