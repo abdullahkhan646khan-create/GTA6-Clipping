@@ -1,0 +1,11 @@
+.env
+*.env.local
+__pycache__/
+*.pyc
+.venv/
+dashboard/config.js
+cookies.txt
+*.ts
+*.mp4
+*.wav
+.DS_Store

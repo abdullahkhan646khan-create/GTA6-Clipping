@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipForge Control</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div id="login" class="login hidden">
+    <form id="loginForm" class="card">
+      <h1>ClipForge</h1>
+      <p class="muted">Sign in with the user you created in Supabase → Authentication.</p>
+      <input id="email" type="email" placeholder="email" required />
+      <input id="password" type="password" placeholder="password" required />
+      <button type="submit">Sign in</button>
+      <p id="loginErr" class="err"></p>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <header>
+      <div class="brand">ClipForge <span class="muted">GTA 6</span></div>
+      <nav id="tabs">
+        <button data-tab="mission" class="active">Mission Control</button>
+        <button data-tab="clips">Clips</button>
+        <button data-tab="streams">Streams</button>
+        <button data-tab="agents">Agents</button>
+        <button data-tab="tasks">Tasks</button>
+        <button data-tab="plan">Plan</button>
+        <button data-tab="streamers">Streamers</button>
+        <button data-tab="settings">Settings</button>
+      </nav>
+      <div class="hdr-right">
+        <span id="hb" class="pill">heartbeat …</span>
+        <button id="killPub" class="danger small">Pause publishing</button>
+        <button id="logout" class="ghost small">Sign out</button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

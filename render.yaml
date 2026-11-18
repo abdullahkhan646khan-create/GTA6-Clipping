@@ -1,0 +1,68 @@
+# Render Blueprint — New → Blueprint → pick this repo. Secrets marked sync:false are entered in the Render UI.
+envVarGroups:
+  - name: clipforge-secrets
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: BUFFER_API_KEY
+        sync: false
+      - key: BUFFER_CHANNEL_ID
+        sync: false
+      - key: YTDLP_COOKIES_B64
+        sync: false
+      - key: YTDLP_PROXY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
+      - key: GITHUB_WAKE_ISSUE
+        sync: false
+      - key: WAKE_METHOD
+        value: github_issue
+
+services:
+  # All agents (capture, cutter, editor, QA, publisher, bridge) in one always-on worker
+  - type: worker
+    name: clipforge-engine
+    runtime: docker
+    dockerfilePath: ./worker/Dockerfile
+    dockerContext: .
+    plan: standard            # 2 GB RAM / 1 CPU; use "pro" for 3+ parallel streams
+    envVars:
+      - fromGroup: clipforge-secrets
+      - key: ROLE
+        value: engine
+      - key: NODE_NAME
+        value: engine-1
+
+  # 10-minute heartbeat: Supervisor + Scout + plan + safety wake
+  - type: cron
+    name: clipforge-heartbeat
+    runtime: docker
+    dockerfilePath: ./worker/Dockerfile
+    dockerContext: .
+    schedule: "*/10 * * * *"
+    dockerCommand: python -m worker.heartbeat
+    plan: starter
+    envVars:
+      - fromGroup: clipforge-secrets
+      - key: NODE_NAME
+        value: heartbeat
+
+  # Dashboard (static site — free)
+  - type: web
+    name: clipforge-dashboard
+    runtime: static
+    rootDir: dashboard
+    buildCommand: echo "window.CF_CONFIG={url:'$SUPABASE_URL',anon:'$SUPABASE_ANON_KEY'};" > config.js
+    staticPublishPath: .
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false

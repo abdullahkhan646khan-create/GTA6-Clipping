@@ -1,0 +1,7 @@
+supabase>=2.10,<3
+requests>=2.32
+python-dotenv>=1.0
+yt-dlp[default]
+bgutil-ytdlp-pot-provider
+chat-downloader>=0.2.8
+faster-whisper>=1.1
