@@ -9,7 +9,21 @@ import time
 from .core import config, db
 
 
+def heartbeat_loop():
+    """The 10-minute heartbeat runs inside the engine (Render free plan has no cron jobs)."""
+    from .heartbeat import main as beat
+    time.sleep(20)
+    while True:
+        try:
+            beat()
+        except Exception as e:
+            db.event(f"supervisor@{config.NODE}", f"heartbeat error: {e}", "error")
+        time.sleep(600)
+
+
 def run_engine():
+    from .server import serve
+    serve()  # bind $PORT first so Render sees the service as healthy
     from .agents.bridge_watcher import BridgeWatcher
     from .agents.capture import CaptureManager
     from .agents.cutter import Cutter
@@ -20,7 +34,10 @@ def run_engine():
     agents = [CaptureManager(), Cutter(), Editor(), QA(), Publisher(), BridgeWatcher()]
     for a in agents:
         threading.Thread(target=a.run, daemon=True, name=a.id).start()
-    db.event(f"engine@{config.NODE}", f"engine started with {len(agents)} agents", "success")
+    if config.ENGINE_HEARTBEAT:
+        threading.Thread(target=heartbeat_loop, daemon=True, name="heartbeat").start()
+    db.event(f"engine@{config.NODE}", f"engine started with {len(agents)} agents"
+             f"{' (light mode)' if config.LIGHT else ''}", "success")
 
     def shutdown(*_):
         for a in agents:

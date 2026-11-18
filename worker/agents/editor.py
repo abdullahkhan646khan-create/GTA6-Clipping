@@ -43,7 +43,7 @@ class Editor(Agent):
         cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{start:.3f}", "-i", str(window),
                "-t", f"{end - start:.3f}", "-filter_complex", vf, "-map", "[out]", "-map", "0:a?",
                "-af", f"loudnorm=I={b['lufs']}:TP={b['true_peak']}:LRA=11",
-               "-c:v", "libx264", "-preset", "veryfast", "-crf", str(b["crf"]), "-maxrate", b["maxrate"],
+               "-c:v", "libx264", "-preset", config.X264_PRESET, "-crf", str(b["crf"]), "-maxrate", b["maxrate"],
                "-bufsize", "12M", "-pix_fmt", "yuv420p", "-r", str(b["fps"]),
                "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", "short.mp4"]
         p = subprocess.run(cmd, cwd=work, capture_output=True, text=True, timeout=1200)
@@ -88,7 +88,9 @@ def graph(layout: str, cam, zoom_at: list, b: dict, dur: float) -> str:
         last = "v2"
     else:
         last = "v1"
-    g += f";[{last}]subtitles=captions.ass[out]"
+    # compose at 1080×1920 (caption coordinates), then downscale in light mode — encoding is the CPU-heavy part
+    final_scale = f",scale={config.OUT_W}:{config.OUT_H}:flags=fast_bilinear" if config.OUT_H != H else ""
+    g += f";[{last}]subtitles=captions.ass{final_scale}[out]"
     return g
 
 

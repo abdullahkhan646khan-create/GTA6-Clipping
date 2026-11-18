@@ -19,8 +19,8 @@ def _event(msg, level="info"):
         pass
 
 
-def main():
-    url = (sys.argv[1] if len(sys.argv) > 1 else None) or os.environ.get("TEST_URL")
+def main(url: str | None = None):
+    url = url or (sys.argv[1] if len(sys.argv) > 1 else None) or os.environ.get("TEST_URL")
     if not url:
         _event("set TEST_URL to a live YouTube stream or channel /live URL", "error")
         return

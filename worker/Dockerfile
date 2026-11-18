@@ -21,7 +21,7 @@ COPY worker/requirements.txt worker/requirements.txt
 RUN pip install -r worker/requirements.txt && pip install -U --pre "yt-dlp[default]"
 
 # pre-download the Whisper model so the first clip isn't slow
-ARG WHISPER_MODEL=base.en
+ARG WHISPER_MODEL=tiny.en
 RUN python -c "from faster_whisper import WhisperModel; WhisperModel('${WHISPER_MODEL}', device='cpu', compute_type='int8')"
 
 COPY worker worker

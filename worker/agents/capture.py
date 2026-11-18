@@ -37,7 +37,9 @@ class CaptureManager(Agent):
             if not s.thread.is_alive():
                 self.sessions.pop(vid)
         slots = int(db.setting("max_parallel_streams", 2) or 2)
-        live = [f"{s.streamer_name} ({s.state})" for s in self.sessions.values()]
+        if config.LIGHT:
+            slots = 1  # free plan: one stream at a time
+        live =[f"{s.streamer_name} ({s.state})" for s in self.sessions.values()]
         if self.paused():
             for s in self.sessions.values():
                 s.stop("kill switch")

@@ -1,7 +1,7 @@
 """QA: automatic technical checks, then asks Claude to review the rendered Short (contact sheet + captions + copy)."""
 from pathlib import Path
 
-from ..core import bridge, db, media, rules
+from ..core import bridge, config, db, media, rules
 from ..core.agent import Agent
 
 
@@ -47,7 +47,7 @@ def tech_checks(short: Path, R: dict) -> dict:
     c, b = R["cut"], R["build"]
     return {
         "duration": {"ok": c["min_s"] - 1 <= dur <= c["max_s"] + 1, "value": round(dur, 1)},
-        "resolution": {"ok": v.get("width") == b["width"] and v.get("height") == b["height"],
+        "resolution": {"ok": v.get("width") == config.OUT_W and v.get("height") == config.OUT_H,
                        "value": f"{v.get('width')}x{v.get('height')}"},
         "audio": {"ok": a is not None, "value": bool(a)},
         "loudness": {"ok": lufs is not None and abs(lufs - b["lufs"]) <= 1.5, "value": lufs},

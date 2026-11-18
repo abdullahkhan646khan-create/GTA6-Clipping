@@ -25,8 +25,16 @@ ROLE = env("ROLE", "engine")  # engine | capture_test | heartbeat
 DATA_DIR = Path(env("DATA_DIR", "/tmp/clipforge"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# Free-tier light mode (Render free: 0.1 CPU / 512 MB): 1 stream, 720p, tiny Whisper, fast encode
+LIGHT = env("LIGHT_MODE", "1") == "1"
+OUT_W, OUT_H = (720, 1280) if LIGHT else (1080, 1920)
+X264_PRESET = env("X264_PRESET", "ultrafast" if LIGHT else "veryfast")
+PORT = int(env("PORT", "10000"))
+ADMIN_TOKEN = env("ADMIN_TOKEN")                   # protects the /run/* endpoints
+ENGINE_HEARTBEAT = env("ENGINE_HEARTBEAT", "1") == "1"  # run the 10-min heartbeat inside the engine
+
 # Capture
-REC_MAX_HEIGHT = int(env("REC_MAX_HEIGHT", "1080"))
+REC_MAX_HEIGHT = int(env("REC_MAX_HEIGHT", "720" if LIGHT else "1080"))
 RING_MINUTES = int(env("RING_MINUTES", "12"))
 SEGMENT_S = int(env("SEGMENT_S", "6"))
 YTDLP_COOKIES_B64 = env("YTDLP_COOKIES_B64")       # base64 of a Netscape cookies.txt (burner account)
@@ -40,7 +48,7 @@ BUFFER_API_KEY = env("BUFFER_API_KEY")
 BUFFER_CHANNEL_ID = env("BUFFER_CHANNEL_ID")       # found with: python -m worker.tools.buffer_setup
 
 # Transcription (local, free)
-WHISPER_MODEL = env("WHISPER_MODEL", "base.en")
+WHISPER_MODEL = env("WHISPER_MODEL", "tiny.en" if LIGHT else "base.en")
 
 # Claude wake-up
 WAKE_METHOD = env("WAKE_METHOD", "github_issue")   # github_issue | github_dispatch | webhook | none
