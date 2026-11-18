@@ -70,15 +70,15 @@ def graph(layout: str, cam, zoom_at: list, b: dict, dur: float) -> str:
         cx, cy, cw, ch = int(x * 1920), int(y * 1080), max(64, int(w * 1920)), max(64, int(h * 1080))
     if layout == "stack":
         g = (f"[0:v]{BASE},split=2[a][b];"
-             f"[a]crop={cw}:{ch}:{cx}:{cy},scale=1080:768:force_original_aspect_ratio=increase,crop=1080:768[cam];"
-             f"[b]crop=1012:1080:454:0,scale=1080:1152[game];[cam][game]vstack=2[v0]")
+             f"[a]crop={cw}:{ch}:{cx}:{cy},scale=1080:768:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:768,unsharp=5:5:0.7[cam];"
+             f"[b]crop=1012:1080:454:0,scale=1080:1152:flags=lanczos[game];[cam][game]vstack=2[v0]")
     elif layout == "reaction":
         g = (f"[0:v]{BASE},crop={cw}:{ch}:{cx}:{cy},"
-             f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}[v0]")
+             f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H},unsharp=5:5:0.5[v0]")
     else:  # full game: 4:5 centre crop over blurred fill
         g = (f"[0:v]{BASE},split=2[a][b];"
              f"[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},boxblur=20:2,eq=brightness=-0.08[bg];"
-             f"[b]crop=864:1080:528:0,scale=1080:1350[fg];[bg][fg]overlay=0:285[v0]")
+             f"[b]crop=864:1080:528:0,scale=1080:1350:flags=lanczos[fg];[bg][fg]overlay=0:285[v0]")
     g += f";[v0]fps={fps},setsar=1[v1]"
     zs = [float(z) for z in zoom_at[: b["max_zooms"]] if 0 <= float(z) < dur]
     if zs:

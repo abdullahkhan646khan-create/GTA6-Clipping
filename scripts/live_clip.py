@@ -119,7 +119,7 @@ def scan(d: Path, top: int = 5):
     for delta, k in cands:
         if any(abs(k - p) < 60 for _, p in picked) or any(abs(k - u) < 60 for u in used):
             continue
-        if keys[-1] - k < 15:  # need post-roll recorded
+        if keys[-1] - k < 35:  # need post-roll recorded
             continue
         picked.append((delta, k))
         if len(picked) >= top:
@@ -143,7 +143,7 @@ def words_for(audio_src: Path) -> list[dict]:
 def cut(d: Path, peak: int, name: str):
     from worker.core.transcribe import compact
     segs = segments(d)
-    w0, w1 = peak - 40, peak + 15
+    w0, w1 = peak - 30, peak + 35  # payoff usually comes after the reaction
     chosen = [p for e, p in segs if e + 6 > w0 and e < w1]
     epoch0 = int(SEG.search(chosen[0].name).group(1))
     cd = d.parent / "clips" / name
@@ -170,6 +170,7 @@ def render(cd: Path):
     brief = json.loads((cd / "brief.json").read_text())
     b = dict(rules._DEFAULTS["build"])
     b["caption_font"] = "Impact"   # installed on macOS; matches the No Way Clips brand
+    b["fps"] = 60                  # streams are 60 fps — keep gameplay smooth
     words = json.loads((cd / "words.json").read_text())
     s, e = float(brief["start"]), float(brief["end"])
     ws = [{**w, "s": max(0.0, w["s"] - s), "e": w["e"] - s} for w in words if w["s"] >= s - 0.05 and w["e"] <= e + 0.05]
@@ -183,11 +184,14 @@ def render(cd: Path):
     ws = [w for w in clean if w["s"] <= float(brief.get("caption_until", 1e9))
           and not any(a <= w["s"] <= b for a, b in brief.get("caption_drop", []))]  # drop misheard stretches
     (cd / "captions.ass").write_text(build_ass(ws, brief, brief.get("streamer", ""), brief["layout"], b), encoding="utf-8")
+    # best quality that still fits Supabase free 50 MB/file: cap avg video bitrate to ~46 MB over the clip
+    maxrate = int(min(16000, 46 * 8000 / max(e - s, 1) - 256))
     vf = graph(brief["layout"], brief.get("cam_box"), brief.get("zoom_at") or [], b, e - s)
     p = subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{s:.3f}", "-i", "window.mp4",
                         "-t", f"{e - s:.3f}", "-filter_complex", vf, "-map", "[out]", "-map", "0:a?",
-                        "-af", "loudnorm=I=-14:TP=-1:LRA=11", "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-                        "-pix_fmt", "yuv420p", "-r", "30", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+                        "-af", "loudnorm=I=-14:TP=-1:LRA=11", "-c:v", "libx264", "-preset", "slow", "-crf", "17",
+                        "-profile:v", "high", "-level", "4.2", "-maxrate", f"{maxrate}k", "-bufsize", f"{maxrate * 2}k",
+                        "-pix_fmt", "yuv420p", "-r", "60", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
                         "-movflags", "+faststart", "short.mp4"], cwd=cd, capture_output=True, text=True)
     if p.returncode:
         sys.exit(p.stderr[-1500:])
