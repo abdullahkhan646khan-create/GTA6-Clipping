@@ -9,3 +9,6 @@ cookies.txt
 *.mp4
 *.wav
 .DS_Store
+.env.render
+.bin/
+live/

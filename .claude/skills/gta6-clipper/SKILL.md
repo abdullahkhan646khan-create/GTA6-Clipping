@@ -55,6 +55,25 @@ Any failed critical tech check (duration, resolution, audio, file_size) → not 
 `worker/core/db.py` helpers in a short Python one-off. To clip a VOD: insert a `clip_vod` job
 (`db.enqueue("clip_vod", {"url":..., "start": s, "end": e, "streamer_id": optional})`).
 
+## Scheduled run (5×/day cloud routine) — make & publish Shorts end to end
+Setup (fresh cloud box): `pip install -q supabase python-dotenv requests "yt-dlp[default]" streamlink imageio-ffmpeg
+ctranslate2 tokenizers huggingface_hub numpy && pip install -q --no-deps faster-whisper`, then
+`mkdir -p .bin && ln -sf "$(python -c 'import imageio_ffmpeg as i;print(i.get_ffmpeg_exe())')" .bin/ffmpeg`;
+if `ffprobe` is missing: `apt-get install -y ffmpeg` (or `pip install static-ffmpeg && static_ffmpeg_paths`).
+`export PATH="$PWD/.bin:$PATH"`. Env secrets come from the environment (never print them).
+1. `python scripts/live_clip.py find 6` → pick the 2 biggest streams by `watching` (prefer big English streamers).
+2. For each: `python scripts/live_clip.py grab https://www.youtube.com/watch?v=ID live/ID 12` (12 min, run both in parallel with `&`, then `wait`).
+3. `python scripts/live_clip.py scan live/ID --top 3` → candidates (`spike_db` ≥ 6 is a real reaction).
+4. For the best 1–2 per stream: `python scripts/live_clip.py cut live/ID PEAK NAME` → read the printed transcript and
+   Read `brief_sheet.jpg`. Decide like a `clip_brief` (rules above). If it's not a clear, self-contained moment: skip it.
+5. Write `live/clips/NAME/brief.json`: `{"start","end","layout","cam_box","hook_text","title","description",
+   "zoom_at","caption_fixes","censor_words","streamer"}`. description = one hook line + `🎥 Credit: {streamer} — https://www.youtube.com/watch?v=ID`
+   + `🔔 Follow @NoWayClipsGTA for the best GTA 6 moments daily` + `#GTA6 #GTAVI #Shorts #NoWayClips #{Streamer}`.
+6. `python scripts/live_clip.py render live/clips/NAME` → Read `qa_sheet.jpg`, check duration 15–58 s, LUFS ≈ −14,
+   captions readable inside the frame, face/action not cropped, hook matches. Score with the clip_qa rubric.
+   Fix (edit brief.json, re-render) at most once. Only a clip scoring ≥ 85 may be published.
+7. `python scripts/live_clip.py publish live/clips/NAME` (max 3 published per run). Report what was published.
+
 ## Other commands (when the user asks, not when woken)
 - Status: `python -m worker.tools.bridge_cli status`; agents/clips via Supabase queries.
 - Full rulebook: `CLIP_RULES.md`. Plan: `PLAN.md`. Tune thresholds by inserting a new `rules` row (merged over

@@ -50,7 +50,7 @@ _M = re.compile(r"t:\s*([\d.]+).*?M:\s*(-?[\d.]+|-inf)")
 def momentary_loudness(src: Path) -> list[tuple[float, float]]:
     """[(t_seconds, LUFS)] every 0.1 s using ebur128 (works on a 6 s segment in ~0.2 s)."""
     p = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-vn",
-                        "-af", "ebur128=framelog=verbose", "-f", "null", "-"],
+                        "-af", "ebur128=framelog=info", "-f", "null", "-"],
                        capture_output=True, text=True, timeout=120)
     out = []
     for line in p.stderr.splitlines():
