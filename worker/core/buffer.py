@@ -69,29 +69,17 @@ def youtube_meta_fields() -> dict:
     return _meta_fields
 
 
-def create_video_post(channel_id: str, title: str, description: str, video_url: str, due_at_iso: str) -> dict:
-    meta = {}
-    yf = youtube_meta_fields()
-    if yf:
-        f, want = yf["fields"], {}
-        if "title" in f:
-            want["title"] = title[:100]
-        for k in ("privacy", "privacyStatus"):
-            if k in f:
-                want[k] = "public"
-        for k in ("madeForKids", "isMadeForKids"):
-            if k in f:
-                want[k] = False
-        if "notifySubscribers" in f:
-            want["notifySubscribers"] = True
-        if "categoryId" in f:
-            want["categoryId"] = "20"  # Gaming
-        meta = {yf["field"]: want}
+def create_video_post(channel_id: str, title: str, description: str, video_url: str,
+                      due_at_iso: str | None = None) -> dict:
+    """Schema verified against api.buffer.com on 2026-11-18 (CreatePostInput / YoutubePostMetadataInput)."""
+    youtube = {"title": title[:100], "privacy": "public", "madeForKids": False, "notifySubscribers": True,
+               "categoryId": "20", "license": "youtube", "embeddable": True}  # 20 = Gaming
     inp = {"text": description, "channelId": channel_id, "schedulingType": "automatic",
-           "mode": "customScheduled", "dueAt": due_at_iso,
-           "assets": [{"video": {"url": video_url, "metadata": {"thumbnailOffset": 1000}}}]}
-    if meta:
-        inp["metadata"] = meta
+           "mode": "customScheduled" if due_at_iso else "shareNow", "needsApproval": False,
+           "assets": [{"video": {"url": video_url, "metadata": {"thumbnailOffset": 1000}}}],
+           "metadata": {"youtube": youtube}}
+    if due_at_iso:
+        inp["dueAt"] = due_at_iso
     q = f"""mutation($input: {_create_post_input_type()}!) {{ createPost(input: $input) {{
              ... on PostActionSuccess {{ post {{ id }} }}
              ... on MutationError {{ message }} }} }}"""

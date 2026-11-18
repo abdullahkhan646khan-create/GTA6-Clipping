@@ -64,13 +64,12 @@ class Publisher(Agent):
 
     def _publish(self, clip):
         self.status(f"publishing “{clip['title']}”")
-        due = db.now() + timedelta(minutes=2)
         url = db.signed_url(clip["video_path"], 7 * 86400)
         pub = db.insert("publications", {"clip_id": clip["id"], "channel": "buffer", "status": "queued",
-                                         "scheduled_for": db.iso(due)})[0]
+                                         "scheduled_for": db.iso()})[0]
         try:
-            post = buffer.create_video_post(config.BUFFER_CHANNEL_ID, clip["title"], clip["description"], url,
-                                            due.strftime("%Y-%m-%dT%H:%M:%S.000Z"))
+            # shareNow: ClipForge already enforces cadence/caps, so Buffer posts immediately
+            post = buffer.create_video_post(config.BUFFER_CHANNEL_ID, clip["title"], clip["description"], url)
             db.update("publications", {"id": pub["id"]}, {"status": "scheduled", "buffer_post_id": post["id"]})
             db.update("clips", {"id": clip["id"]}, {"status": "scheduled", "updated_at": db.iso()})
             self.log(f"📤 scheduled on Buffer: “{clip['title']}”", "success", clip_id=clip["id"])
