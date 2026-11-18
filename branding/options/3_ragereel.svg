@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <rect width="800" height="800" fill="#E10600"/>
+  <text x="400" y="500" text-anchor="middle" font-family="Futura" font-weight="bold" font-style="italic" font-size="330" fill="#FFFFFF" letter-spacing="-18">RR</text>
+  <rect x="160" y="560" width="480" height="64" fill="#FFFFFF"/>
+  <text x="400" y="610" text-anchor="middle" font-family="Avenir Next Condensed" font-weight="bold" font-size="54" fill="#E10600" letter-spacing="16">RAGE REEL</text>
+</svg>

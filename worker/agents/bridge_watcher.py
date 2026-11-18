@@ -118,11 +118,12 @@ def apply_brief(req: dict, by_claude: bool, agent: Agent):
 
     title = res.get("title") or R["title_formulas"][4]
     hashtags = list(dict.fromkeys(R["publish"]["hashtags_base"] + (res.get("hashtags") or [])
-                                  + [f"#{name.replace(' ', '').replace('-', '')}"]))[:6]
+                                  + [f"#{name.replace(' ', '').replace('-', '')}"]))[:7]
     offset = int((clip.get("window_offset_s") or 0) + final["start"])
     url = (stream or {}).get("url", "")
     desc = (f"{res.get('description_line') or title}\n\n🎥 Credit: {name} — {(streamer or {}).get('channel_url', '')}\n"
-            f"▶ Full stream: {url}{'&' if '?' in url else '?'}t={max(0, offset)}s\n\n{' '.join(hashtags)}")
+            f"▶ Full stream: {url}{'&' if '?' in url else '?'}t={max(0, offset)}s\n"
+            f"🔔 Follow {R['publish'].get('channel_handle', '')} for the best GTA 6 moments daily\n\n{' '.join(hashtags)}")
     fs = _final_score(clip, res.get("llm_score"), category, streamer, R)
     status = "editing"
     reason = None

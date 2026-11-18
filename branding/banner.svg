@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="2560" viewBox="0 -560 2560 2560">
+  <rect x="0" y="-560" width="2560" height="2560" fill="#FFD500"/>
+  <g fill="#111" opacity=".07" font-family="Impact" font-size="150" transform="rotate(-7 1280 720)">
+    <text x="-200" y="250">NO WAY NO WAY NO WAY NO WAY NO WAY NO WAY</text>
+    <text x="-60" y="1300">NO WAY NO WAY NO WAY NO WAY NO WAY NO WAY</text>
+  </g>
+  <g transform="rotate(-4 1280 720)">
+    <text x="1280" y="760" text-anchor="middle" font-family="Impact" font-size="300" fill="#111" letter-spacing="-2">NO WAY CLIPS</text>
+    <rect x="680" y="800" width="1200" height="96" fill="#111"/>
+    <text x="1280" y="872" text-anchor="middle" font-family="DIN Condensed" font-weight="bold" font-size="72" fill="#FFD500" letter-spacing="8">GTA 6 STREAM MOMENTS · DAILY</text>
+  </g>
+</svg>
